@@ -47,6 +47,18 @@
             "gid": "{}",
             "tips": "取消准备"
         },
+        "getGamePlayers":{
+            "func": "getGamePlayers",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "获取本局玩家名单",
+            "return_type": {
+                "message": [
+                    "$name"
+                ]
+            }
+        },
 
         "choosePokeOrder":{
             "func": "choosePokeOrder",
@@ -173,6 +185,8 @@
                 ]
             }
         },
+
+
         "getGids":{
             "func": "getGids",
             "name": "{}",
@@ -181,6 +195,17 @@
             "return_type": {
                 "message": [
                     "str"
+                ]
+            }
+        },
+        "getOnlinePlayers":{
+            "func": "getOnlinePlayers",
+            "name": "{}",
+            "seq": "{}",
+            "tips": "获取所有在线玩家",
+            "return_type": {
+                "message": [
+                    "$name"
                 ]
             }
         }

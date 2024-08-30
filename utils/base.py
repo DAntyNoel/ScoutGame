@@ -990,7 +990,7 @@ def find_player(name:str) -> Player|None:
         return PLAYER[name]['player']
     return None
 
-async def find_player_ws(name:str, websocket: Websocket, gamer: Gamer|None = None) -> Player:
+async def find_player_ws(name:str, websocket: Websocket|None = None, gamer: Gamer|None = None) -> Player:
     '''Find player by name. Raise error to client. 
     If gamer specified, player must be in the game.
     If websocket specified, check if the websocket is verified.'''
@@ -999,7 +999,7 @@ async def find_player_ws(name:str, websocket: Websocket, gamer: Gamer|None = Non
     if name in PLAYER:
         if gamer and PLAYER[name]['gamer'] != gamer:
             raise AssertionError('Player not in the game')
-        if websocket and PLAYER[name]['websocket'] != websocket:
+        if websocket and id(PLAYER[name]['websocket']) != id(websocket):
             raise AssertionError('Player not logged in')
         return PLAYER[name]['player']
     else:
@@ -1013,7 +1013,7 @@ def find_game(gid:str) -> Gamer|None:
         return GAMER[gid]['gamer']
     return None
 
-async def find_game_ws(gid:str, websocket: Websocket, name: str = '') -> Gamer:
+async def find_game_ws(gid:str, websocket: Websocket|None = None, name: str = '') -> Gamer:
     '''Find game by websocket. Raise error to client. 
     If name specified, player must be in the game. '''
     global PLAYER

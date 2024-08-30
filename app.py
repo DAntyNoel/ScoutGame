@@ -48,6 +48,13 @@ async def handler(websocket: Websocket):
                 if DEBUG:
                     print(yellow(f"Player {name} queries game ids."), f" Websocket: {id(websocket)}")
                 continue
+            elif func == 'getOnlinePlayers':
+                # Get online players
+                await ok(seq, websocket, list(PLAYER.keys()))
+                if DEBUG:
+                    print(yellow(f"Player {name} queries online players."), f" Websocket: {id(websocket)}")
+                continue
+
             assert 'gid'  in event.keys(), 'Request error: `gid`  required'
             gid  = str(event['gid'])
             player:Player = await find_player_ws(event['name'], websocket)
@@ -105,7 +112,7 @@ async def handler(websocket: Websocket):
                     # Distribute pokes
                     for nm, pks in player_and_poke.items():
                         # Check validity
-                        await find_player_ws(nm, websocket, gamer)
+                        await find_player_ws(nm, gamer=gamer)
                         tgt_wbskt = PLAYER[nm]['websocket']
                         await send(tgt_wbskt, format(S2C['distributePokes'], gid=gid, name=nm, pokes=pks, seq=-1))
                         if DEBUG:
@@ -116,6 +123,11 @@ async def handler(websocket: Websocket):
                 await ok(seq, websocket)
                 if DEBUG:
                     print(green(f"Player {name} unready in game {gid}."), f" Websocket: {id(websocket)}")
+            elif func == 'getGamePlayers':
+                # Get game players
+                await ok(seq, websocket, gamer.players)
+                if DEBUG:
+                    print(yellow(f"Player {name} queries game players in game {gid}."), f" Websocket: {id(websocket)}")
 
         # Methods below require game initiated
 
