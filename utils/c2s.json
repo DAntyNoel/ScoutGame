@@ -1,0 +1,167 @@
+{    
+    "system": {
+        "connect":{
+            "func": "connect",
+            "name": "{}",
+            "seq": "{}",
+            "key": "{}",
+            "tips": "连接服务器"
+        },
+        "heartbeat":{
+            "func": "heartbeat",
+            "name": "{}",
+            "seq": "{}",
+            "key": "{}",
+            "tips": "心跳"
+        }
+    },
+    "main": {
+        "playerJoin":{
+            "func": "playerJoin",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "加入游戏，返回房间码。当gid为空时创建新游戏，否则加入现有游戏",
+            "return_type": {
+                "message": "$gid"
+            }
+        },
+        "playerLeave":{
+            "func": "playerLeave",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "离开游戏"
+        },
+        "playerReady":{
+            "func": "playerReady",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "准备"
+        },
+        "playerUnready":{
+            "func": "playerUnready",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "取消准备"
+        },
+
+        "choosePokeSide":{
+            "func": "choosePokeSide",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "reverse": "{}",
+            "tips": "选择手牌正反序"
+        },
+        "playPokes":{
+            "func": "playPokes",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "b_index": "{}",
+            "e_index": "{}",
+            "tips": "出牌，pokes为两组数，第一组为正序，第二组为反序，两组之间逗号分隔，数之间空格分隔，T代表10。"
+        },
+        "drawPokes":{
+            "func": "drawPokes",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "index": "{}",
+            "reverse": "{}",
+            "insert_to": "{}",
+            "tips": "摸牌\n index: [0, -1],摸牌位置\n reverse: bool[0, 1],是否反序\n insert_to: int,插入位置"
+        },
+
+        "confirmResult":{
+            "func": "confirmResult",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "确认结果"
+        }
+    },
+    "subjective": {
+        "getPokes":{
+            "func": "getPokes",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "获取本局手牌，pokes为两组数，第一组为有效，第二组为无效，两组之间逗号分隔，数之间空格分隔，T代表10。",
+            "return_type": {
+                "message": "$pokes"
+            }
+        },
+        "getScore":{
+            "func": "getScore",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "获取本局当前得分",
+            "return_type": {
+                "message": "int"
+            }
+        },
+        "getInfo":{
+            "func": "getInfo",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "获取游戏信息（与broadcast相同）",
+            "return_type": {
+                "message": "str"
+            }
+        },
+        "getGameInfo":{
+            "func": "getGameInfo",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "获取本局公开信息\n返回值：\n    turn: int,当前回合\n    players: [str],玩家名单\n    goal_pokes: [int],得分牌\n    remain_pokes: [int],剩余手牌\n    extra_points: [int],额外得分\n    table: [str],桌面上的牌\n    last_op: dict,上一次操作",
+            "return_type": {
+                "message": {
+                    "turn": "int",
+                    "players": ["$name"],
+                    "goal_pokes": ["int"],
+                    "remain_pokes": ["int"],
+                    "extra_points": ["int"],
+                    "table": ["str"],
+                    "last_op": {
+                        "game_operation": "str",
+                        "target_name": "$name",
+                        "type_": "int",
+                        "detail": "str"
+                    }
+                }
+            }
+        },
+    
+        "getTotalScore":{
+            "func": "getTotalScore",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "获取所有玩家累计总得分",
+            "return_type": {
+                "message": {
+                    "$name": "int"
+                }
+            }
+        },
+        "getHistory":{
+            "func": "getHistory",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "获取本局历史出牌记录",
+            "return_type": {
+                "message": [
+                    "str"
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,74 @@
+{
+    "playerJoin": {
+        "func": "playerJoin",
+        "info": "{}",
+        "gid": "{}",
+        "target_name": "{}"
+    },
+    "playerLeave": {
+        "func": "playerLeave",
+        "info": "{}",
+        "gid": "{}",
+        "target_name": "{}"
+    },
+    "playerReady": {
+        "func": "playerReady",
+        "info": "{}",
+        "gid": "{}",
+        "target_name": "{}"
+    },
+    "playerUnready": {
+        "func": "playerUnready",
+        "info": "{}",
+        "gid": "{}",
+        "target_name": "{}"
+    },
+    
+    "gameInit": {
+        "func": "gameInit",
+        "info": "{}",
+        "gid": "{}",
+        "tips": "所有人准备完毕，游戏初始化，发牌并选择牌序"
+    },
+    "gameStart": {
+        "func": "gameStart",
+        "info": "{}",
+        "gid": "{}",
+        "table": "{}",
+        "tips": "所有人选择完毕，游戏正式开始"
+    },
+    "gameAction": {
+        "func": "gameAction",
+        "info": "{}",
+        "gid": "{}",
+        "table": "{}",
+        "target_name": "{}",
+        "op": {
+            "game_operation": "{}",
+            "target_name": "{}",
+            "type_": "{}",
+            "detail": "{}"
+        },
+        "tips": "游戏进行事件"
+    },
+    "win": {
+        "func": "gameEnd",
+        "info": "{}",
+        "gid": "{}",
+        "target_name": "{}",
+        "tips": "游戏结束"
+    },
+    "terminate": {
+        "func": "gameEnd",
+        "info": "{}",
+        "gid": "{}",
+        "tips": "游戏终止"
+    },
+    "playerConfirm": {
+        "func": "playerConfirm",
+        "info": "{}",
+        "gid": "{}",
+        "target_name": "{}",
+        "tips": "玩家确认结果"
+    }
+}

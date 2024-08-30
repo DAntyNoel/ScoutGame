@@ -1,0 +1,17 @@
+{
+    "distributePokes": {
+        "func": "receivePokes",
+        "seq": "{}",
+        "gid": "{}",
+        "name": "{}",
+        "pokes": "{}",
+        "tips": "向玩家发送手牌，pokes为两组数，第一组为正序，第二组为反序，两组之间逗号分隔，数之间空格分隔，T代表10。"
+    },
+    "turnToPlay": {
+        "func": "turnToPlay",
+        "seq": "{}",
+        "gid": "{}",
+        "name": "{}",
+        "tips": "轮到玩家出牌，若为空则游戏结束"
+    }
+}
