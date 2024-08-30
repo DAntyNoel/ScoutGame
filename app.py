@@ -35,15 +35,15 @@ async def handler(websocket: Websocket):
             elif DEBUG:
                 print(green(f"Receive response: {event['message']}."), f" Websocket: {id(websocket)}")
             continue
-        
-        # Request Event
-        assert 'func' in event.keys(), 'Request error: `func` required'
-        assert 'name' in event.keys(), 'Request error: `name` required'
-        assert 'gid'  in event.keys(), 'Request error: `gid`  required'
-        func = str(event['func'])
-        name = str(event['name'])
-        gid  = str(event['gid'])
+
         try:
+            # Request Event
+            assert 'func' in event.keys(), 'Request error: `func` required'
+            assert 'name' in event.keys(), 'Request error: `name` required'
+            assert 'gid' in event.keys(), 'Request error: `gid`  required'
+            func = str(event['func'])
+            name = str(event['name'])
+            gid = str(event['gid'])
             player:Player = await find_player_ws(event['name'], websocket)
             if func == 'playerJoin':
                 # Player join
@@ -224,13 +224,13 @@ async def handler(websocket: Websocket):
         except AssertionError as e:
             await error(seq, websocket, message=str(e), code=400)
             if DEBUG:
-                print(red(f"Error: {e}."), f" Websocket: {id(websocket)}")
+                print(red(f"AssertionError: {e}."), f" Websocket: {id(websocket)}")
         except Exception as e:
             import traceback
             traceback.print_exc()
             await error(seq, websocket, message=str(e))
             if DEBUG:
-                print(red(f"Error: {e}."), f" Websocket: {id(websocket)}")
+                print(red(f"Exception: {e}."), f" Websocket: {id(websocket)}")
         finally:
             pass
 
@@ -240,25 +240,28 @@ async def conn(websocket: Websocket):
     '''
     global PLAYER
     global GAMER
-    event = await recv(websocket)
-    seq = event['seq']
-    assert event['func'] == 'connect', 'Connection error: `connect` required'
     if DEBUG:
-        print(green(f"Websocket {websocket} connected."))
-    name = event['name']
-    if find_player(name) is not None:
-        await error(seq, websocket, message='Player already exists', code=403)
-        if DEBUG:
-            print(red(f"Player {event['name']} already exists."), f" Websocket: {id(websocket)}")
-    else:
-        player = Player(name)
-        PLAYER[name] = {
-            'player': player,
-            'websocket': websocket,
-        }
-        if DEBUG:
-            print(green(f"Player {name} created."), f" Websocket: {id(websocket)}")
-        await ok(seq, websocket)
+        print(green(f"Websocket {repr(websocket)} connected."))
+    while True:
+        event = await recv(websocket)
+        seq = event['seq']
+        assert event['func'] == 'connect', 'Connection error: `connect` required'
+        name = event['name']
+        if find_player(name) is not None:
+            await error(seq, websocket, message='Player already exists', code=403)
+            if DEBUG:
+                print(red(f"Player {event['name']} already exists."), f" Websocket: {id(websocket)}")
+            continue
+        else:
+            player = Player(name)
+            PLAYER[name] = {
+                'player': player,
+                'websocket': websocket,
+            }
+            if DEBUG:
+                print(green(f"Player {name} created."), f" Websocket: {id(websocket)}")
+            await ok(seq, websocket)
+            break
     try:
         await handler(websocket)
     except Exception as e:
