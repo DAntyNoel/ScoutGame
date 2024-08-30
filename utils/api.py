@@ -2,13 +2,13 @@ import json, os
 __this_dir = os.path.dirname(__file__)
 
 C2S = json.load(
-    open(os.path.join(__this_dir, 'c2s.json'), 'r')
+    open(os.path.join(__this_dir, 'c2s.json'), 'r', encoding='utf-8')
 )
 S2C = json.load(
-    open(os.path.join(__this_dir, 's2c.json'), 'r')
+    open(os.path.join(__this_dir, 's2c.json'), 'r', encoding='utf-8')
 )
 BROADCAST = json.load(
-    open(os.path.join(__this_dir, 'broadcast.json'), 'r')
+    open(os.path.join(__this_dir, 'broadcast.json'), 'r', encoding='utf-8')
 )
 
 def format(Api:dict, **kwargs) -> str:
