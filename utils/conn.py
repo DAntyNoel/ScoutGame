@@ -9,7 +9,13 @@ async def send(websocket: Websocket, data: dict) -> None:
 
 async def recv(websocket: Websocket) -> dict:
     '''Receive data from client'''
-    return json.loads(await websocket.recv())
+    resp = json.loads(await websocket.recv())
+    if not isinstance(resp, dict):
+        rescue = eval(resp)
+        if not isinstance(rescue, dict):
+            return {}
+        return rescue
+    return resp
 
 async def error(seq: int, websocket: Websocket, message: str, code: int = -1) -> None:
     '''Send error message to client'''

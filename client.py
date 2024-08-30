@@ -15,10 +15,11 @@ async def connect(url: str) -> Websocket:
     return await websockets.connect(url)
 
 async def process_bd_event(event: dict) -> None:
-    '''Process broadcast event #TODO'''
+    '''Process broadcast event'''
     assert 'func' in event.keys(), 'Broadcast error: `func` required'
     assert 'info' in event.keys(), 'Broadcast error: `info` required'
     assert 'gid'  in event.keys(), 'Broadcast error: `gid`  required'
+    # TODO
     print(yellow('Recieve broadcast event:\n'), event, '')
     
 async def query(websocket: Websocket, data: dict, **kwargs) -> dict:

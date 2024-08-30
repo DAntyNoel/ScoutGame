@@ -282,8 +282,8 @@ class Gamer:
         # 分发扑克牌
         random.shuffle(self.all_pokes)
         poke_nums = {
-            2: 15,
-            3: 15,
+            2: 11,
+            3: 12,
             4: 11,
             5: 9
         }
@@ -382,12 +382,12 @@ class Gamer:
         # 处理操作
         next_player = self.players[(self.players.index(op.player) + 1) % self.playing_num]
         if op.type_ == 0:
-            self.player_play_pokes(op)
+            self.player_show(op)
         elif op.type_ == 1:
-            self.player_draw_pokes(op)
+            self.player_scout(op)
         elif op.type_ == 2:
             next_player = op.player
-            self.player_draw_pokes(op)
+            self.player_scout(op)
         # 有玩家胜利
         if len(op.player.pokes) == 0:
             assert self.win(op.player), \
@@ -401,7 +401,7 @@ class Gamer:
             self.player_turn_act(op.player)
         return True, None
     
-    def player_play_pokes(self, op: GameOperation) -> None:
+    def player_show(self, op: GameOperation) -> None:
         '''玩家出牌逻辑处理'''
         player = op.player
         pokes = op.detail
@@ -427,7 +427,7 @@ class Gamer:
             player.pokes.remove(poke)
         # 更新牌桌上的牌
         self.set_displayed_pokes(pokes)
-    def player_draw_pokes(self, op: GameOperation) -> None:
+    def player_scout(self, op: GameOperation) -> None:
         '''玩家摸牌逻辑处理'''
         new_poke = op.detail
         target_poke = self.get_poke([new_poke.value, new_poke.value_disable])
@@ -708,7 +708,7 @@ class Player:
             "Ingame Error: Player must be set to a gamer before act"
         info = '轮到你出牌了'
     
-    def play_pokes(self, pokes: 'PokeCombine') -> 'Player|None':
+    def show(self, pokes: 'PokeCombine') -> 'Player|None':
         '''出牌，将会广播事件，返回下一个出牌玩家，若有玩家胜利则返回None'''
         assert pokes.type_ != 0, \
             "Pokes must be a valid combine"
@@ -723,7 +723,7 @@ class Player:
             "Pokes must be greater than table's"
         return self.turn_end(0, pokes)
 
-    def draw_pokes(self, poke_index: bool, reverse: bool, insert_index: int) -> 'None|Player':
+    def scout(self, poke_index: bool, reverse: bool, insert_index: int) -> 'None|Player':
         '''摸牌，将会广播事件，返回下一个出牌玩家，若有玩家胜利则返回None
 
         poke_index: 摸牌位置, Ture为头部，False为尾部

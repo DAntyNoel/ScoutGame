@@ -111,39 +111,39 @@ async def handler(websocket: Websocket):
 
         # Methods below require game initiated
 
-            if func == 'choosePokeSide':
+            if func == 'choosePokeOrder':
                 # Choose poke side
                 # 选择手牌正反序
                 reverse = bool(int(event['reverse']))
                 player.choose_pokes_side(reverse)
                 await ok(seq, websocket)
                 if DEBUG:
-                    print(green(f"Player {name} choose poke side{' ' if reverse else ' not '}reversed in game {gid}."), f" Websocket: {id(websocket)}")
+                    print(green(f"Player {name} choose poke order{' ' if reverse else ' not '}reversed in game {gid}."), f" Websocket: {id(websocket)}")
 
         # Methods below require game started
 
-            elif func == 'playPokes':
+            elif func == 'show':
                 # Play pokes
                 # 出牌，指定手牌索引，b_index从零开始，e_index为-1代表到最后一张牌。
                 # # 出牌，pokes为两组数，第一组为正序，第二组为反序，两组之间逗号分隔，数之间空格分隔，T代表10。
                 b_index = int(event['b_index'])
                 e_index = int(event['e_index'])
                 pokes = player.choose_pokes_index(b_index, e_index)
-                nxt = player.play_pokes(pokes)
+                nxt = player.show(pokes)
                 await ok(seq, websocket)
                 if DEBUG:
                     if nxt:
                         print(green(f"Player {name} play pokes {pokes} in game {gid}. Next one {nxt.name}"), f" Websocket: {id(websocket)}")
                     else:
                         print(green(f"Player {name} play pokes {pokes} in game {gid}. He wins!"), f" Websocket: {id(websocket)}")
-            elif func == 'drawPokes':
+            elif func == 'scout':
                 # Draw pokes
                 # 摸牌\n index: [0, -1],摸牌位置\n reverse: bool[0, 1],是否反序\n insert_to: int,插入位置
                 index = int(event['index'])
                 assert index in [0, -1], 'Invalid index. You can only draw from the top or the bottom of the deck.'
                 reverse = bool(int(event['reverse']))
                 insert_to = int(event['insert_to'])
-                nxt = player.draw_pokes(index, reverse, insert_to)
+                nxt = player.scout(index, reverse, insert_to)
                 await ok(seq, websocket)
                 if DEBUG:
                     if nxt:
