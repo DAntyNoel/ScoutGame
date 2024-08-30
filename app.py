@@ -265,9 +265,12 @@ async def conn(websocket: Websocket):
     try:
         await handler(websocket)
     except Exception as e:
+        if DEBUG:
+            print(red(f"Exception: {e}."), f" Websocket: {id(websocket)}")
+    finally:
         PLAYER.pop(name)
         if DEBUG:
-            print(red(f"Connection closed to websocket: {id(websocket)}. \n\tError: {e}."))
+            print(red(f"Connection closed to websocket: {id(websocket)}. "))
 
 async def main():
     async with serve(conn, "localhost", 8001):
