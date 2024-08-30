@@ -24,6 +24,8 @@ async def handler(websocket: Websocket):
     global GAMER
     async for msg in websocket:
         event = json.loads(msg)
+        if isinstance(event, str):
+            event = eval(event)
         seq = int(event['seq'])
 
         # Response Event
@@ -133,9 +135,9 @@ async def handler(websocket: Websocket):
                 await ok(seq, websocket)
                 if DEBUG:
                     if nxt:
-                        print(green(f"Player {name} play pokes {pokes} in game {gid}. Next one {nxt.name}"), f" Websocket: {id(websocket)}")
+                        print(green(f"Player {name} show pokes {pokes} in game {gid}. Next one {nxt.name}"), f" Websocket: {id(websocket)}")
                     else:
-                        print(green(f"Player {name} play pokes {pokes} in game {gid}. He wins!"), f" Websocket: {id(websocket)}")
+                        print(green(f"Player {name} show pokes {pokes} in game {gid}. He wins!"), f" Websocket: {id(websocket)}")
             elif func == 'scout':
                 # Draw pokes
                 # 摸牌\n index: [0, -1],摸牌位置\n reverse: bool[0, 1],是否反序\n insert_to: int,插入位置
@@ -147,9 +149,24 @@ async def handler(websocket: Websocket):
                 await ok(seq, websocket)
                 if DEBUG:
                     if nxt:
-                        print(green(f"Player {name} draw pokes in game {gid}. Next one {nxt.name}"), f" Websocket: {id(websocket)}")
+                        print(green(f"Player {name} scout pokes in game {gid}. Next one {nxt.name}"), f" Websocket: {id(websocket)}")
                     else:
-                        print(yellow(f"Player {name} draw pokes in game {gid}. Game ends unexpectedly!"), f" Websocket: {id(websocket)}")
+                        print(yellow(f"Player {name} scout pokes in game {gid}. Game ends unexpectedly!"), f" Websocket: {id(websocket)}")
+            elif func == 'scoutAndShow':
+                # Draw and play pokes
+                # 摸牌并出牌\n index: [0, -1],摸牌位置\n reverse: bool[0, 1],是否反序\n insert_to: int,插入位置\n b_index: int,起始位置\n e_index: int,结束位置
+                index = int(event['index'])
+                assert index in [0, -1], 'Invalid index. You can only draw from the top or the bottom of the deck.'
+                reverse = bool(int(event['reverse']))
+                insert_to = int(event['insert_to'])
+                nxt = player.scout_and_show(pokes)
+                await ok(seq, websocket)
+                if DEBUG:
+                    if nxt:
+                        print(green(f"Player {name} scout and play pokes {pokes} in game {gid}. Next one {nxt.name}"), f" Websocket: {id(websocket)}")
+                    else:
+                        print(yellow(f"Player {name} scout and play pokes {pokes} in game {gid}. Game ends unexpectedly!"), f" Websocket: {id(websocket)}")
+            
             elif func == 'confirmResult':
                 # Confirm result
                 # 确认结果

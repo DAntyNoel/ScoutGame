@@ -24,16 +24,7 @@ class GameOperation:
     player: 'Player'
     '''操作玩家'''
     type_: int
-    '''操作类型
-
-    -1: 游戏开始
-
-    0: 出牌
-
-    1: 摸牌
-
-    2: 摸牌并立刻出牌
-    '''
+    '''操作类型'''
     detail: 'None|PokeCombine|Poke|Poke'
     '''操作细节'''
     pos: int
@@ -55,7 +46,7 @@ class GameOperation:
         elif self.type_ == 1:
             return f"{self.player.name} 摸牌 {self.detail}"
         elif self.type_ == 2:
-            return f"{self.player.name} 摸牌并立刻出牌"
+            return f"{self.player.name} 摸牌 {self.detail}并立刻出牌"
         elif self.type_ == -1:
             return f"游戏开始: {self.player.name} 先手"
     def full_log(self) -> str:
@@ -64,7 +55,7 @@ class GameOperation:
         elif self.type_ == 1:
             return f"{self.player.name} 摸牌 {self.detail}，插入成为第{self.pos + 1}张"
         elif self.type_ == 2:
-            return f"{self.player.name} 摸牌并立刻出牌 {self.detail}，插入成为第{self.pos + 1}张"
+            return f"{self.player.name} 摸牌{self.detail}，插入成为第{self.pos + 1}张并立刻出牌"
         elif self.type_ == -1:
             return f"游戏开始: {self.player.name} 先手"
     def json(self) -> dict:
@@ -108,6 +99,8 @@ class Gamer:
     '''游戏历史记录'''
     displayed_pokes: 'PokeCombine'
     '''牌桌上的牌'''
+    scout_and_show: list['Player']
+    '''本局使用过 摸牌并立刻出牌 的玩家'''
 
     # 游戏得分信息
     @property
@@ -133,6 +126,7 @@ class Gamer:
         self.all_pokes = []
         self.game_history = []
         self.displayed_pokes = PokeCombine([])
+        self.scout_and_show = []
 
         self.total_score = {}
         self.extra_points = {}
@@ -153,6 +147,7 @@ class Gamer:
         self.all_pokes = []
         self.game_history = []
         self.displayed_pokes = PokeCombine([])
+        self.scout_and_show = []
 
         self.extra_points = {player.name: 0 for player in self.players}
     def _has_player(self, player: 'Player') -> bool:
@@ -386,6 +381,9 @@ class Gamer:
         elif op.type_ == 1:
             self.player_scout(op)
         elif op.type_ == 2:
+            if op.player in self.scout_and_show:
+                return False, "Player can only scout and show once in a game"
+            self.scout_and_show.append(op.player)
             next_player = op.player
             self.player_scout(op)
         # 有玩家胜利
@@ -748,6 +746,34 @@ class Player:
         if reverse:
             new_poke.reverse_side()
         return self.turn_end(1, new_poke, pos=insert_index)
+    
+    def scout_and_show(self, poke_index: bool, reverse: bool, insert_index: int) -> 'Player|None':
+        '''摸牌并立刻出牌，将会广播事件，返回下一个出牌玩家，若有玩家胜利则返回None
+
+        poke_index: 摸牌位置, Ture为头部，False为尾部
+
+        reverse: 摸上来牌是否翻转
+
+        insert_index: 摸上来牌放入自己手牌的位置
+
+        displayed_pokes: 牌桌上的牌
+        '''
+        assert self.state == PlayerState.TURN, \
+            "Only player in turn state can draw pokes"
+        assert self.gamer, \
+            "Player must be set to a gamer before play pokes"
+        assert self not in self.gamer.scout_and_show, \
+            "Player can only scout and show once in a game"
+        displayed_pokes = self.gamer.get_displayed_pokes()
+        assert len(displayed_pokes) > 0, \
+            "Displayed pokes must exist"
+        target_poke = displayed_pokes.pokes[0 if poke_index else -1]
+        new_poke = Poke(up=target_poke.up, down=target_poke.down, side=target_poke.side)
+        new_poke.set_owner(self)
+        new_poke.set_state(PokeState.HIDE)
+        if reverse:
+            new_poke.reverse_side()
+        return self.turn_end(2, new_poke, pos=insert_index)
             
     def turn_end(self, type_: int, detail: 'PokeCombine|Poke', pos: int = -1) -> 'Player|None':
         '''玩家回合结束，将会广播事件，自动转换状态，通知Gamer并返回下一个出牌玩家
