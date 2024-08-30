@@ -611,10 +611,10 @@ class Player:
             "Only offline player can be set to a gamer"
         assert self.gamer == None, \
             "Player must not be in any game"
-        assert gamer, \
+        assert isinstance(gamer, Gamer), \
             "Not a valid gamer"
+        gamer.add_player(self)
         self.gamer = gamer
-        self.gamer.add_player(self)
 
     def ready_for_game(self) ->  None|dict[str, str]:
         '''玩家主动准备游戏，将广播事件'''
