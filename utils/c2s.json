@@ -1,7 +1,7 @@
 {    
     "system": {
-        "connect":{
-            "func": "connect",
+        "login":{
+            "func": "login",
             "name": "{}",
             "seq": "{}",
             "key": "{}",
@@ -167,6 +167,17 @@
             "seq": "{}",
             "gid": "{}",
             "tips": "获取本局历史出牌记录",
+            "return_type": {
+                "message": [
+                    "str"
+                ]
+            }
+        },
+        "getGids":{
+            "func": "getGids",
+            "name": "{}",
+            "seq": "{}",
+            "tips": "获取所有游戏房间码",
             "return_type": {
                 "message": [
                     "str"

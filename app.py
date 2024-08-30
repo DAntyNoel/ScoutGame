@@ -37,13 +37,19 @@ async def handler(websocket: Websocket):
             continue
         
         # Request Event
-        assert 'func' in event.keys(), 'Request error: `func` required'
-        assert 'name' in event.keys(), 'Request error: `name` required'
-        assert 'gid'  in event.keys(), 'Request error: `gid`  required'
-        func = str(event['func'])
-        name = str(event['name'])
-        gid  = str(event['gid'])
         try:
+            assert 'func' in event.keys(), 'Request error: `func` required'
+            assert 'name' in event.keys(), 'Request error: `name` required'
+            func = str(event['func'])
+            name = str(event['name'])
+            if func == 'getGids':
+                # Get game ids
+                await ok(seq, websocket, list(GAMER.keys()))
+                if DEBUG:
+                    print(yellow(f"Player {name} queries game ids."), f" Websocket: {id(websocket)}")
+                continue
+            assert 'gid'  in event.keys(), 'Request error: `gid`  required'
+            gid  = str(event['gid'])
             player:Player = await find_player_ws(event['name'], websocket)
             if func == 'playerJoin':
                 # Player join
@@ -242,7 +248,7 @@ async def conn(websocket: Websocket):
     global GAMER
     event = await recv(websocket)
     seq = event['seq']
-    assert event['func'] == 'connect', 'Connection error: `connect` required'
+    assert event['func'] == 'login', 'Connection error: Please login first.'
     if DEBUG:
         print(green(f"Websocket {websocket} connected."))
     name = event['name']
