@@ -125,13 +125,13 @@ async def handler(websocket: Websocket):
                     print(green(f"Player {name} unready in game {gid}."), f" Websocket: {id(websocket)}")
             elif func == 'getGamePlayers':
                 # Get game players
-                await ok(seq, websocket, gamer.players)
+                await ok(seq, websocket, [p.name for p in gamer.players])
                 if DEBUG:
                     print(yellow(f"Player {name} queries game players in game {gid}."), f" Websocket: {id(websocket)}")
 
         # Methods below require game initiated
 
-            if func == 'choosePokeOrder':
+            elif func == 'choosePokeOrder':
                 # Choose poke side
                 # 选择手牌正反序
                 reverse = bool(int(event['reverse']))
