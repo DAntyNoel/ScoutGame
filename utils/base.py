@@ -329,7 +329,7 @@ class Gamer:
             self.player_turn_act(first_player)
 
     def player_turn_act(self, player: 'Player') -> None:
-        '''通知玩家回合开始'''
+        '''通知玩家回合开始，广播事件'''
         bd(get_websockets(self.gid), format(BD['gameAction'], gid=self.gid, info=self.get_info(), target_name=player.name, table=str(self.displayed_pokes), op=self.game_history[-1].json()))
         assert self.state == GameState.PLAYING, \
             "Ingame Error: Only playing game can player turn act"
@@ -338,7 +338,7 @@ class Gamer:
         player.set_state(PlayerState.TURN)
         player.turn_act()
     def player_turn_end(self, op:GameOperation) -> tuple[bool, 'str|Player|None']:
-        '''玩家回合结束，广播事件，事件非法时返回False和错误信息，否则返回True和下一位玩家，若有玩家胜利则返回True和None'''
+        '''玩家回合结束，将会广播事件，事件非法时返回False和错误信息，否则返回True和下一位玩家，若有玩家胜利则返回True和None'''
         assert self.state == GameState.PLAYING, \
             "Ingame Error: Only playing game can player turn end"
         assert op.player.state == PlayerState.WAIT, \
@@ -392,7 +392,6 @@ class Gamer:
                 "Ingame Error: Player win is not successful"
             return True, next_player
         # 游戏继续，通知下一位玩家
-        bd(get_websockets(self.gid), format(BD['gameAction'], gid=self.gid, info=self.get_info(), table=str(self.displayed_pokes), op=op.json()))
         if op.type_ == 0 or op.type_ == 1:
             self.player_turn_act(self.players[(self.players.index(op.player) + 1) % self.playing_num])
         elif op.type_ == 2:
