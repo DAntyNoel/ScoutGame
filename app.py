@@ -181,9 +181,9 @@ async def handler(websocket: Websocket):
                 await ok(seq, websocket)
                 if DEBUG:
                     if nxt:
-                        print(green(f"Player {name} scout and play pokes {pokes} in game {gid}. Next one {nxt.name}"), f" Websocket: {id(websocket)}")
+                        print(green(f"Player {name} scout and play in game {gid}. Next one {nxt.name}"), f" Websocket: {id(websocket)}")
                     else:
-                        print(yellow(f"Player {name} scout and play pokes {pokes} in game {gid}. Game ends unexpectedly!"), f" Websocket: {id(websocket)}")
+                        print(yellow(f"Player {name} scout and play in game {gid}. Game ends unexpectedly!"), f" Websocket: {id(websocket)}")
             
             elif func == 'confirmResult':
                 # Confirm result
