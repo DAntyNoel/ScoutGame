@@ -177,7 +177,7 @@ async def handler(websocket: Websocket):
                 assert index in [0, -1], 'Invalid index. You can only draw from the top or the bottom of the deck.'
                 reverse = bool(int(event['reverse']))
                 insert_to = int(event['insert_to'])
-                nxt = player.scout_and_show(pokes)
+                nxt = player.scout_and_show(index, reverse, insert_to)
                 await ok(seq, websocket)
                 if DEBUG:
                     if nxt:
