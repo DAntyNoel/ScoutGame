@@ -371,6 +371,8 @@ class Gamer:
             target_idx = self.players.index(op.player)
             if last_op.player != op.player:
                 return False, "Only player himself in turn can draw and play"
+            if op.type_ != 0:
+                return False, "Player must show pokes after scout and show"
             if self.displayed_pokes >= op.detail:
                 return False, "Pokes must be greater than table's (2)"
         self.game_history.append(op)
@@ -390,13 +392,10 @@ class Gamer:
         if len(op.player.pokes) == 0:
             assert self.win(op.player), \
                 "Ingame Error: Player win is not successful"
-            return True, next_player
+            return True, None
         # 游戏继续，通知下一位玩家
-        if op.type_ == 0 or op.type_ == 1:
-            self.player_turn_act(self.players[(self.players.index(op.player) + 1) % self.playing_num])
-        elif op.type_ == 2:
-            self.player_turn_act(op.player)
-        return True, None
+        self.player_turn_act(next_player)
+        return True, next_player
     
     def player_show(self, op: GameOperation) -> None:
         '''玩家出牌逻辑处理'''
