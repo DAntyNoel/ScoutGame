@@ -80,6 +80,8 @@ class GameState(Enum):
     '''单局结束''' # 连续对局中间态
 
 class Gamer:
+    _is_online: bool
+    '''是否在线'''
     # 游戏基本信息
     gid: int|str
     '''游戏ID'''
@@ -116,7 +118,9 @@ class Gamer:
     total_score: dict[str: int]
     '''玩家总得分'''
 
-    def __init__(self, gid: int|str) -> None:
+    def __init__(self, gid: int|str, online: bool = True) -> None:
+        self._is_online = online
+
         self.gid = gid
         self.players = []
         self.playing_num = 0
@@ -162,7 +166,7 @@ class Gamer:
             'info': self.info,
             'total_score': self.total_score,
             'extra_points': self.extra_points,
-            'displayed_pokes': str(self.displayed_pokes),
+            'displayed_pokes': self.displayed_pokes.json(),
             'history': [str(op) for op in self.game_history]
         }
 
@@ -223,7 +227,8 @@ class Gamer:
         if self.playing_num == 5:
             self.set_state(GameState.FULL)
             self.info = "游戏人数已满，等待开始"   
-        bd(get_websockets(self.gid), format(BD['playerJoin'], gid=self.gid, info=self.get_info(), target_name=player.name))
+        if self._is_online:
+            bd(get_websockets(self.gid), format(BD['playerJoin'], gid=self.gid, info=self.get_info(), target_name=player.name))
     def remove_player(self, player: 'Player') -> None:
         '''移除玩家，广播事件'''
         if self.state == GameState.END:
@@ -244,14 +249,16 @@ class Gamer:
         if self.playing_num < 5:
             self.set_state(GameState.RECRUIT)
             self.info = f"游戏招募中，已准备 {sum(1 for p in self.players if p.state == PlayerState.READY)}/{len(self.players)}"
-        bd(get_websockets(self.gid), format(BD['playerLeave'], gid=self.gid, info=self.get_info(), target_name=player.name))
+        if self._is_online:
+            bd(get_websockets(self.gid), format(BD['playerLeave'], gid=self.gid, info=self.get_info(), target_name=player.name))
 
     def player_ready(self, player: 'Player') -> None|dict[str, str]:
         '''玩家准备，广播事件，当所有玩家准备完毕时返回初始化信息'''
         assert not self._is_started(), \
             "Game has already started"
         self.info = f"游戏招募中，已准备 {sum(1 for p in self.players if p.state == PlayerState.READY)}/{len(self.players)}"
-        bd(get_websockets(self.gid), format(BD['playerReady'], gid=self.gid, info=self.get_info(), target_name=player.name))
+        if self._is_online:
+            bd(get_websockets(self.gid), format(BD['playerReady'], gid=self.gid, info=self.get_info(), target_name=player.name))
         if all(p.state == PlayerState.READY for p in self.players):
             self.set_state(GameState.INIT)
             self.info = "游戏初始化中"
@@ -261,7 +268,8 @@ class Gamer:
         '''玩家取消准备，广播事件'''
         assert not self._is_started(), \
             "Game has already started"
-        bd(get_websockets(self.gid), format(BD['playerUnready'], gid=self.gid, info=self.get_info(), target_name=player.name))
+        if self._is_online:
+            bd(get_websockets(self.gid), format(BD['playerUnready'], gid=self.gid, info=self.get_info(), target_name=player.name))
     
     # 游戏循环主体
 
@@ -306,7 +314,8 @@ class Gamer:
         # 通知玩家游戏开始，选择牌序
         for player in self.players:
             player.game_start()
-        bd(get_websockets(self.gid), format(BD['gameInit'], gid=self.gid, info=self.get_info()))
+        if self._is_online:
+            bd(get_websockets(self.gid), format(BD['gameInit'], gid=self.gid, info=self.get_info()))
         return player_and_poke
     def player_init_finish(self, player: 'Player') -> None:
         '''玩家起始准备结束，广播事件'''
@@ -322,7 +331,8 @@ class Gamer:
         if all(self.init_finish):
             self.set_state(GameState.PLAYING)
             self.info = "游戏开始"
-            bd(get_websockets(self.gid), format(BD['gameStart'], gid=self.gid, info=self.get_info(), table=str(self.displayed_pokes)))
+            if self._is_online:
+                bd(get_websockets(self.gid), format(BD['gameStart'], gid=self.gid, info=self.get_info(), table=self.displayed_pokes.json()))
             # 第一个玩家开始
             first_player = random.choice(self.players)
             self.game_history.append(GameOperation(first_player, -1, None))
@@ -330,7 +340,8 @@ class Gamer:
 
     def player_turn_act(self, player: 'Player') -> None:
         '''通知玩家回合开始，广播事件'''
-        bd(get_websockets(self.gid), format(BD['gameAction'], gid=self.gid, info=self.get_info(), target_name=player.name, table=str(self.displayed_pokes), op=self.game_history[-1].json()))
+        if self._is_online:
+            bd(get_websockets(self.gid), format(BD['gameAction'], gid=self.gid, info=self.get_info(), target_name=player.name, table=self.displayed_pokes.json(), op=self.game_history[-1].json()))
         assert self.state == GameState.PLAYING, \
             "Ingame Error: Only playing game can player turn act"
         assert player.state == PlayerState.WAIT, \
@@ -497,14 +508,16 @@ class Gamer:
         # 通知玩家游戏结束
         for player in self.players:
             player.game_ended()
-        bd(get_websockets(self.gid), format(BD['win'], gid=self.gid, info=self.get_info(), target_name=player.name))
+        if self._is_online:
+            bd(get_websockets(self.gid), format(BD['win'], gid=self.gid, info=self.get_info(), target_name=player.name))
         self.confirmed = [False for _ in self.players]
         return True
     def player_confirm_result(self, player: 'Player') -> None:
         '''玩家确认游戏结束，广播事件，仅允许END状态游戏中间态调用，否则无效'''
         if self.state == GameState.END:
             self.confirmed[self.players.index(player)] = True
-            bd(get_websockets(self.gid), format(BD['playerConfirm'], gid=self.gid, info=self.get_info(), target_name=player.name))
+            if self._is_online:
+                bd(get_websockets(self.gid), format(BD['playerConfirm'], gid=self.gid, info=self.get_info(), target_name=player.name))
             # 清空单局游戏信息
             if all(self.confirmed):
                 self._clear_state()
@@ -539,7 +552,7 @@ class Gamer:
                                poke.state == PokeState.HIDE and poke.owner == player) 
                                     for player in self.players],
             'extra_points': self.extra_points,
-            'table': str(self.displayed_pokes),
+            'table': self.displayed_pokes.json(),
             'last_op': self.game_history[-1].json() if len(self.game_history) > 0 else None
         }
 
@@ -707,7 +720,7 @@ class Player:
     def show(self, pokes: 'PokeCombine') -> 'Player|None':
         '''出牌，将会广播事件，返回下一个出牌玩家，若有玩家胜利则返回None'''
         assert pokes.type_ != 0, \
-            "Pokes must be a valid combine"
+            f"Pokes must be a valid combine: {pokes.json()}"
         assert self.state == PlayerState.TURN, \
             "Only player in turn state can play pokes"
         assert all(poke in self.pokes for poke in pokes.pokes), \
@@ -716,7 +729,7 @@ class Player:
             "Player must be set to a gamer before play pokes"
         displayed_pokes = self.gamer.get_displayed_pokes()
         assert pokes > displayed_pokes, \
-            "Pokes must be greater than table's"
+            f"Pokes must be greater than table's. Your's: {pokes}, Table's: {displayed_pokes}"
         return self.turn_end(0, pokes)
 
     def scout(self, poke_index: bool, reverse: bool, insert_index: int) -> 'None|Player':
@@ -935,9 +948,9 @@ class PokeCombine:
     def __len__(self) -> int:
         return len(self.pokes)   
     def __str__(self) -> str:
-        return ' '.join(str(poke) for poke in self.pokes) + ',' + ' '.join(poke.str_disable for poke in self.pokes)
+        return ' '.join(str(poke) for poke in self.pokes)
     def json(self) -> str:
-        return str(self)
+        return ' '.join(str(poke) for poke in self.pokes) + ',' + ' '.join(poke.str_disable for poke in self.pokes)
     def _calculate_type(self) -> int:
         if len(self.pokes) == 0:
             return 1 # 空牌也视作合法
