@@ -51,11 +51,14 @@
         },
         "tips": "游戏进行事件"
     },
-    "win": {
+    "gameEnd": {
         "func": "gameEnd",
         "info": "{}",
         "gid": "{}",
         "target_name": "{}",
+        "scores": {
+            "$name": "{}"
+        },
         "tips": "游戏结束"
     },
     "terminate": {

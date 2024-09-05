@@ -259,7 +259,8 @@ class Gamer:
         self.info = f"游戏招募中，已准备 {sum(1 for p in self.players if p.state == PlayerState.READY)}/{len(self.players)}"
         if self._is_online:
             bd(get_websockets(self.gid), format(BD['playerReady'], gid=self.gid, info=self.get_info(), target_name=player.name))
-        if all(p.state == PlayerState.READY for p in self.players):
+        if all(p.state == PlayerState.READY for p in self.players) and \
+            2 <= len(self.players) <= 5:
             self.set_state(GameState.INIT)
             self.info = "游戏初始化中"
             return self.init_game()
@@ -395,14 +396,19 @@ class Gamer:
             self.player_scout(op)
         elif op.type_ == 2:
             if op.player in self.scout_and_show:
+                self.game_history.pop()
                 return False, "Player can only scout and show once in a game"
             self.scout_and_show.append(op.player)
             next_player = op.player
             self.player_scout(op)
         # 有玩家胜利
+        if len(self.players) > 2 and \
+            all(op.type_ == 1 for op in self.game_history[-len(self.players) + 1:]):
+            assert self.beat_all(op.player), \
+                "Ingame Error: Player win: beat all is not successful"
         if len(op.player.pokes) == 0:
-            assert self.win(op.player), \
-                "Ingame Error: Player win is not successful"
+            assert self.show_all(op.player), \
+                "Ingame Error: Player win: show all is not successful"
             return True, None
         # 游戏继续，通知下一位玩家
         self.player_turn_act(next_player)
@@ -484,8 +490,8 @@ class Gamer:
             "Only playing game can set displayed pokes"
         self.displayed_pokes = pokes
     
-    def win(self, player: 'Player') -> bool:
-        '''玩家胜利，广播事件'''
+    def show_all(self, player: 'Player') -> bool:
+        '''玩家出完了所有手牌，广播事件'''
         assert self.state == GameState.PLAYING, \
             "Only playing game can set win"
         # 检查玩家手牌是否为空
@@ -499,17 +505,38 @@ class Gamer:
         for p in self.players:
             p.set_state(PlayerState.END)
         self.set_state(GameState.END)
-        self.info = f"游戏结束，{player.name}获胜！"
+        self.info = f"游戏结束，{player.name}出完了他的手牌！"
         # 记录分数
+        scores = {player.name: self.get_player_score(player) for player in self.players}
         for player in self.players:
             if player.name not in self.total_score:
                 self.total_score[player.name] = 0
-            self.total_score[player.name] += self.get_player_score(player)
+            self.total_score[player.name] += scores[player.name]
         # 通知玩家游戏结束
-        for player in self.players:
             player.game_ended()
         if self._is_online:
-            bd(get_websockets(self.gid), format(BD['win'], gid=self.gid, info=self.get_info(), target_name=player.name))
+            bd(get_websockets(self.gid), format(BD['gameEnd'], gid=self.gid, info=self.get_info(), target_name=player.name, scores=scores))
+        self.confirmed = [False for _ in self.players]
+        return True
+    def beat_all(self, player: 'Player') -> bool:
+        '''玩家打败所有玩家，广播事件'''
+        assert self.state == GameState.PLAYING, \
+            "Only playing game can set win"
+        # 修改玩家状态和游戏状态
+        for p in self.players:
+            p.set_state(PlayerState.END)
+        self.set_state(GameState.END)
+        self.info = f"游戏结束，{player.name}打败了所有玩家！"
+        # 记录分数
+        scores = {player.name: self.get_player_score(player) for player in self.players}
+        for player in self.players:
+            if player.name not in self.total_score:
+                self.total_score[player.name] = 0
+            self.total_score[player.name] += scores[player.name]
+        # 通知玩家游戏结束
+            player.game_ended()
+        if self._is_online:
+            bd(get_websockets(self.gid), format(BD['gameEnd'], gid=self.gid, info=self.get_info(), target_name=player.name, scores=scores))
         self.confirmed = [False for _ in self.players]
         return True
     def player_confirm_result(self, player: 'Player') -> None:
