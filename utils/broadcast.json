@@ -23,6 +23,25 @@
         "gid": "{}",
         "target_name": "{}"
     },
+    "lockRoom": {
+        "func": "lockRoom",
+        "info": "{}",
+        "gid": "{}",
+        "tips": "房间锁定"
+    },
+    "unlockRoom": {
+        "func": "unlockRoom",
+        "info": "{}",
+        "gid": "{}",
+        "tips": "房间解锁"
+    },
+    "setHost": {
+        "func": "setHost",
+        "info": "{}",
+        "gid": "{}",
+        "target_name": "{}",
+        "tips": "设置房主"
+    },
     
     "gameInit": {
         "func": "gameInit",

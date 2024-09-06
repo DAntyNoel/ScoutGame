@@ -55,7 +55,7 @@ class GameOperation:
         elif self.type_ == 1:
             return f"{self.player.name} 摸牌 {self.detail}，插入成为第{self.pos + 1}张"
         elif self.type_ == 2:
-            return f"{self.player.name} 摸牌{self.detail}，插入成为第{self.pos + 1}张并立刻出牌"
+            return f"{self.player.name} 摸牌 {self.detail}，插入成为第{self.pos + 1}张并立刻出牌"
         elif self.type_ == -1:
             return f"游戏开始: {self.player.name} 先手"
     def json(self) -> dict:

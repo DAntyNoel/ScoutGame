@@ -47,18 +47,6 @@
             "gid": "{}",
             "tips": "取消准备"
         },
-        "getGamePlayers":{
-            "func": "getGamePlayers",
-            "name": "{}",
-            "seq": "{}",
-            "gid": "{}",
-            "tips": "获取本局玩家名单",
-            "return_type": {
-                "message": [
-                    "$name"
-                ]
-            }
-        },
 
         "choosePokeOrder":{
             "func": "choosePokeOrder",
@@ -137,6 +125,16 @@
                 "message": "str"
             }
         },
+        "getHost":{
+            "func": "getHost",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "获取房主",
+            "return_type": {
+                "message": "$name"
+            }
+        },
         "getGameInfo":{
             "func": "getGameInfo",
             "name": "{}",
@@ -158,6 +156,18 @@
                         "detail": "str"
                     }
                 }
+            }
+        },
+        "getGamePlayers":{
+            "func": "getGamePlayers",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "获取本局玩家名单",
+            "return_type": {
+                "message": [
+                    "$name"
+                ]
             }
         },
     
