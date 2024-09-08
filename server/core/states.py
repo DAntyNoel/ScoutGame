@@ -1,5 +1,7 @@
 from enum import Enum
 
+DEBUG = True
+
 class PokeState(Enum):
     '''扑克牌状态'''
     WAITING = -1

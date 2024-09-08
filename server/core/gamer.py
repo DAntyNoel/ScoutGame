@@ -1,12 +1,11 @@
 import random
-from .states import GameState, PlayerState, PokeState
+from .states import GameState, PlayerState, PokeState, DEBUG
 from .conn import bd
-from .api import BROADCAST as BD, format
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .poke import Poke, PokeCombine
-    from .player import Player
-    from websockets import WebSocketClientProtocol as Websocket
+from .api import BROADCAST as BD, format, yellow
+from .poke import Poke, PokeCombine
+from .player import Player
+
+from websockets import WebSocketClientProtocol as Websocket
 
 class GameOperation:
     '''游戏操作
@@ -20,8 +19,10 @@ class GameOperation:
     1: 摸牌
     
     2: 摸牌并立刻出牌
+
+    -2: 游戏结束
     
-    detail: 操作细节，游戏开始为None，出牌为PokeCombine，摸牌为Poke，摸牌并立刻出牌为Poke'''
+    detail: 操作细节，游戏开始/游戏结束为None，出牌为PokeCombine，摸牌为Poke，摸牌并立刻出牌为Poke'''
     player: Player
     '''操作玩家'''
     type_: int
@@ -50,6 +51,8 @@ class GameOperation:
             return f"{self.player.name} 摸牌 {self.detail}并立刻出牌"
         elif self.type_ == -1:
             return f"游戏开始: {self.player.name} 先手"
+        elif self.type_ == -2:
+            return f"游戏结束: {self.player.name} 打出了所有牌/让所有人摸牌"
     def full_log(self) -> str:
         if self.type_ == 0:
             return f"{self.player.name} 出牌 {self.detail}"
@@ -59,6 +62,8 @@ class GameOperation:
             return f"{self.player.name} 摸牌{self.detail}，插入成为第{self.pos + 1}张并立刻出牌"
         elif self.type_ == -1:
             return f"游戏开始: {self.player.name} 先手"
+        elif self.type_ == -2:
+            return f"游戏结束: {self.player.name} 打出了所有牌/让所有人摸牌"
     def json(self) -> dict:
         return {
             'game_operation': str(self),
@@ -262,6 +267,8 @@ class Gamer:
             bd(self.get_websockets(), format(BD['playerReady'], gid=self.gid, info=self.get_info(), target_name=player.name))
         if all(p.state == PlayerState.READY for p in self.players) and \
             2 <= len(self.players) <= 5:
+            if DEBUG:
+                print(yellow(f"Game {self.gid} is ready to start. Players: {[p.name for p in self.players]}"))
             self.set_state(GameState.INIT)
             self.info = "游戏初始化中"
             return self.init_game()
@@ -364,6 +371,8 @@ class Gamer:
         self.info = f"已准备 ({sum(self.init_finish)}/{len(self.init_finish)})"
         self.init_finish[self.players.index(player)] = True
         if all(self.init_finish):
+            if DEBUG:
+                print(yellow(f"Game {self.gid} starts!. Players: {[p.name for p in self.players]}"))
             self.set_state(GameState.PLAYING)
             self.info = "游戏开始"
             if self._is_online:
@@ -383,8 +392,10 @@ class Gamer:
             "Ingame Error: Only player in wait state can act"
         player.set_state(PlayerState.TURN)
         player.turn_act()
-    def player_turn_end(self, op:GameOperation) -> tuple[bool, str|Player|None]:
+    def player_turn_end(self, op: tuple|GameOperation) -> tuple[bool, str|Player|None]:
         '''玩家回合结束，将会广播事件，事件非法时返回False和错误信息，否则返回True和下一位玩家，若有玩家胜利则返回True和None'''
+        if isinstance(op, tuple):
+            op = GameOperation(*op)
         assert self.state == GameState.PLAYING, \
             "Ingame Error: Only playing game can player turn end"
         assert op.player.state == PlayerState.WAIT, \
@@ -438,8 +449,9 @@ class Gamer:
         # 有玩家胜利
         if len(self.players) > 2 and \
             all(op.type_ == 1 for op in self.game_history[-len(self.players) + 1:]):
-            assert self.beat_all(op.player), \
+            assert self.beat_all(self.game_history[-len(self.players)].player), \
                 "Ingame Error: Player win: beat all is not successful"
+            return True, None
         if len(op.player.pokes) == 0:
             assert self.show_all(op.player), \
                 "Ingame Error: Player win: show all is not successful"
@@ -529,6 +541,9 @@ class Gamer:
             p.set_state(PlayerState.END)
         self.set_state(GameState.END)
         self.info = f"游戏结束，{player.name}出完了他的手牌！"
+        self.game_history.append(GameOperation(player, -2, None))
+        if DEBUG:
+                print(yellow(f"Game {self.gid} ends! {player.name} shows all pokes."))
         # 记录分数
         scores = {player.name: self.get_player_score(player) for player in self.players}
         for player in self.players:
@@ -550,6 +565,9 @@ class Gamer:
             p.set_state(PlayerState.END)
         self.set_state(GameState.END)
         self.info = f"游戏结束，{player.name}打败了所有玩家！"
+        self.game_history.append(GameOperation(player, -2, None))
+        if DEBUG:
+                print(yellow(f"Game {self.gid} ends! {player.name} beats all players."))
         # 记录分数
         scores = {player.name: self.get_player_score(player) for player in self.players}
         for player in self.players:

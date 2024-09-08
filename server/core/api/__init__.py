@@ -1,9 +1,6 @@
 import json, os
 __this_dir = os.path.dirname(__file__)
 
-C2S = json.load(
-    open(os.path.join(__this_dir, 'c2s.json'), 'r')
-)
 S2C = json.load(
     open(os.path.join(__this_dir, 's2c.json'), 'r')
 )

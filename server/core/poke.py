@@ -1,10 +1,16 @@
 from .states import PokeState
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .player import Player
+
 class Poke:
     up: int
     '''正面数字'''
     down: int
     '''背面数字'''
+    owner: 'Player'
+    '''拥有者'''
     state: PokeState
     '''状态'''
     side: bool
@@ -41,10 +47,12 @@ class Poke:
         '''清空牌局信息'''
         self.state = PokeState.WAITING
         self.side = True
+        self.owner = None
     def is_ready(self) -> bool:
         '''牌局初始化的检查函数'''
         return (
-            self.state == PokeState.HIDE 
+            self.state == PokeState.HIDE and
+            self.owner is not None
         )
 
     def __eq__(self, value: tuple[str|int]|str) -> bool:
@@ -82,6 +90,10 @@ class Poke:
                 "State must be an instance of PokeState or int"
             )
         self.state = state
+    
+    def set_owner(self, owner: 'Player') -> None:
+        '''设置牌拥有者'''
+        self.owner = owner
     
     def reverse_side(self) -> None:
         '''翻转正反面'''

@@ -135,6 +135,28 @@
                 "message": "$name"
             }
         },
+        "setHost":{
+            "func": "setHost",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "target_name": "{}",
+            "tips": "设置房主"
+        },
+        "lockRoom":{
+            "func": "lockRoom",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "锁定房间"
+        },
+        "unlockRoom":{
+            "func": "unlockRoom",
+            "name": "{}",
+            "seq": "{}",
+            "gid": "{}",
+            "tips": "解锁房间"
+        },
         "getGameInfo":{
             "func": "getGameInfo",
             "name": "{}",

@@ -2,14 +2,15 @@ from websockets import WebSocketClientProtocol as Websocket
 from .states import PlayerState, PokeState
 
 from typing import TYPE_CHECKING
+from .poke import Poke, PokeCombine
 if TYPE_CHECKING:
     from .gamer import Gamer, GameOperation
-    from .poke import Poke, PokeCombine
+    
     
 class Player:
     name: str
     '''玩家名'''
-    gamer: Gamer|None
+    gamer: 'Gamer|None'
     '''游戏对象'''
     pokes: list[Poke]
     '''手牌'''
@@ -105,14 +106,12 @@ class Player:
 
     # 游戏准备阶段的接口
 
-    def set_gamer(self, gamer: Gamer) -> None:
+    def set_gamer(self, gamer: 'Gamer') -> None:
         '''玩家进入游戏'''
         assert self.state == PlayerState.ONLINE, \
             "Only ONLINE player can be set to a gamer"
         assert self.gamer == None, \
             "Player must not be in any game"
-        assert isinstance(gamer, Gamer), \
-            "Not a valid gamer"
         gamer.add_player(self)
         self.gamer = gamer
         self.set_state(PlayerState.ROOM)
@@ -170,13 +169,14 @@ class Player:
         '''查看手牌'''
         return ' '.join(str(poke) for poke in self.pokes)+','+' '.join(poke.str_disable for poke in self.pokes)
 
-    def receive_pokes(self, pokes: list['Poke']) -> None:
+    def receive_pokes(self, pokes: list[Poke]) -> None:
         '''获取手牌并修改牌的状态'''
         assert self.state == PlayerState.READY, \
             "Only player in ready state can get pokes"
         self.pokes = pokes
         for poke in self.pokes:
             poke.set_state(PokeState.HIDE)
+            poke.set_owner(self)
 
     def choose_pokes_side(self, reverse: bool) -> None:
         '''牌局开始时，选择手牌正反面，将广播事件'''
@@ -189,7 +189,7 @@ class Player:
                 poke.reverse_side()
         self.gamer.player_init_finish(self)
     
-    def choose_pokes_index(self, begin:int, end:int) -> 'PokeCombine':
+    def choose_pokes_index(self, begin:int, end:int) -> PokeCombine:
         '''选择手牌组合'''
         assert self.pokes != [], \
             "Player must have pokes to choose"
@@ -205,7 +205,7 @@ class Player:
             "Ingame Error: Player must be set to a gamer before act"
         info = '轮到你出牌了'
     
-    def show(self, pokes: 'PokeCombine') -> 'Player|None':
+    def show(self, pokes: PokeCombine) -> 'Player|None':
         '''出牌，将会广播事件，返回下一个出牌玩家，若有玩家胜利则返回None'''
         assert pokes.type_ != 0, \
             f"Pokes must be a valid combine: {pokes.json()}"
@@ -241,6 +241,7 @@ class Player:
         target_poke = displayed_pokes.pokes[0 if poke_index else -1]
         new_poke = Poke(up=target_poke.up, down=target_poke.down, side=target_poke.side)
         new_poke.set_state(PokeState.HIDE)
+        new_poke.set_owner(self)
         if reverse:
             new_poke.reverse_side()
         return self.turn_end(1, new_poke, pos=insert_index)
@@ -268,6 +269,7 @@ class Player:
         target_poke = displayed_pokes.pokes[0 if poke_index else -1]
         new_poke = Poke(up=target_poke.up, down=target_poke.down, side=target_poke.side)
         new_poke.set_state(PokeState.HIDE)
+        new_poke.set_owner(self)
         if reverse:
             new_poke.reverse_side()
         return self.turn_end(2, new_poke, pos=insert_index)
@@ -283,7 +285,7 @@ class Player:
         assert self.gamer, \
             "Ingame Error: Player must be set to a gamer before end turn"
         self.set_state(PlayerState.WAIT)
-        op = GameOperation(self, type_, detail, pos)
+        op = (self, type_, detail, pos)
         success, info = self.gamer.player_turn_end(op)
         assert success, info
         return info
