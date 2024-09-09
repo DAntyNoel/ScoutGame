@@ -5,8 +5,9 @@ import os
 from .core import (
     Player, Gamer,
     Websocket,
-    S2C, BD,
-    bd,
+    send, recv,
+    green, yellow, red, 
+    S2C, C2S, BD, format,
     DEBUG
 )
 
@@ -84,20 +85,6 @@ class Query:
             'message': message
         })
 
-async def send(websocket: Websocket, data: dict) -> None:
-    '''Send data to client'''
-    await websocket.send(json.dumps(data))
-
-async def recv(websocket: Websocket) -> dict:
-    '''Receive data from client'''
-    resp = json.loads(await websocket.recv())
-    if not isinstance(resp, dict):
-        rescue = eval(resp)
-        if not isinstance(rescue, dict):
-            return {}
-        return rescue
-    return resp
-    
 def find_player(name:str) -> 'Player|None':
     '''Find player by name'''
     global PLAYER
@@ -141,37 +128,4 @@ async def find_game_ws(gid:str, websocket: Websocket|None = None, name: str = ''
             return GAMER[gid]['gamer']
         raise AssertionError('You are not in the game.')
     raise AssertionError('Game not found.')
-
-def format(Api:dict, **kwargs) -> str:
-    '''Format API'''
-    # Remove tips and return_type
-    Api.pop('tips', None)
-    Api.pop('return_type', None)
-    # Format with kwargs
-    for key, value in kwargs.items():
-        if key in Api.keys():
-            if isinstance(value, bool):
-                value = int(value)
-            if Api[key] == '{}':
-                Api[key] = Api[key].format(value)
-            else:
-                Api[key] = value
-        else:
-            print(f'Error: Key "{key}" not exists')
-    for key, value in Api.items():
-        if value == '{}':
-            print(f'Error: Key "{key}" not formatted')
-    return json.dumps(Api)
-
-def red(string:str) -> str:
-    '''Red color'''
-    return f'\033[91m{string}\033[0m'
-
-def yellow(string:str) -> str:
-    '''Yellow color'''
-    return f'\033[93m{string}\033[0m'
-
-def green(string:str) -> str:
-    '''Green color'''
-    return f'\033[92m{string}\033[0m'   
 

@@ -13,21 +13,21 @@ async def getHost(query: Query):
         print(yellow(f"Player {query.name} queries host in game {query.gid}."), f" Websocket: {id(query.ws)}")
 
 async def setHost(query: Query):
-    '''Set host of the game'''
+    '''Set host of the game. Require host permission'''
     query.gamer.set_host(query.get('target_name'))
     await query.ok()
     if DEBUG:
         print(green(f"Player {query.name} set host in game {query.gid}."), f" Websocket: {id(query.ws)}")
 
 async def lockRoom(query: Query):
-    '''Lock the room'''
+    '''Lock the room. Require host permission'''
     query.gamer.lock_room(query.player)
     await query.ok()
     if DEBUG:
         print(green(f"Player {query.name} set game {query.gid} private."), f" Websocket: {id(query.ws)}")
 
 async def unlockRoom(query: Query):
-    '''Unlock the room'''
+    '''Unlock the room. Require host permission'''
     query.gamer.unlock_room(query.player)
     await query.ok()
     if DEBUG:

@@ -4,18 +4,16 @@ import json
 
 from websockets.asyncio.server import serve
 
-import server
 from server import (
+    Functions, Query, Websocket,
     Player, Gamer,
-    Query, Websocket,
     PLAYER, GAMER, 
-    red, green, yellow,
+    green, yellow, red, 
     find_player, find_player_ws,
     send, recv
 )
 
 DEBUG = True
-
 
 async def handler(websocket: Websocket):
     '''Server Thread'''
@@ -37,7 +35,7 @@ async def handler(websocket: Websocket):
         # Request Event
         try:
             assert 'func' in event.keys(), 'Request error: `func` required'
-            f = getattr(server, event['func'])
+            f = getattr(Functions, event['func'])
             await f(Query(event, websocket))
         except AssertionError as e:
             await Query(event, websocket).error(message=str(e), code=400)
