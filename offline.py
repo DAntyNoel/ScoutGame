@@ -1,11 +1,19 @@
-from utils.base import *
+from server import *
 import random, traceback
 random.seed(0)
 gamer = Gamer(0, False)
+
+DEBUG = False
+
 p1 = Player('p1')
 p2 = Player('p2')
 p3 = Player('p3')
 p4 = Player('p4')
+
+p1.offline()
+p2.offline()
+p3.offline()
+p4.offline()
 
 p1.set_gamer(gamer)
 p2.set_gamer(gamer)

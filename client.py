@@ -1,13 +1,15 @@
 import websockets
-from websockets import WebSocketClientProtocol as Websocket
 import json
-
-from utils import yellow, red, green
-from utils import format, C2S
+from server import (
+    Websocket,
+    format, C2S,
+    green, yellow, red
+)
 
 QUERY = C2S['main']
 GET = C2S['subjective']
 SYS = C2S['system']
+
 seq_num = 0
 
 async def connect(url: str) -> Websocket:

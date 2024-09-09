@@ -1,4 +1,4 @@
-from .api import BROADCAST as BD, S2C, format, yellow, red, green
+from .api import BROADCAST as BD, S2C, C2S, format, yellow, red, green
 from .conn import send, recv, bd, error, ok
 from .gamer import GameOperation, Gamer
 from .player import Player

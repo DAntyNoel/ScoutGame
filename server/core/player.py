@@ -1,10 +1,11 @@
-from websockets import WebSocketClientProtocol as Websocket
+from .conn import Websocket
 from .states import PlayerState, PokeState
+from .poke import Poke, PokeCombine
 
 from typing import TYPE_CHECKING
-from .poke import Poke, PokeCombine
 if TYPE_CHECKING:
-    from .gamer import Gamer, GameOperation
+    # Avoid circular import
+    from .gamer import Gamer
     
     
 class Player:
@@ -47,6 +48,20 @@ class Player:
         } # TODO
         self._is_logged = True
         return True, 'Login success'
+    def offline(self) -> None:
+        '''离线模式'''
+        self.ws = None
+        self._is_logged = False
+        self.database = {
+            'username': self.name,
+            'uid': -1,
+            'pwd_hash': '',
+            'last_login': '',
+            'points': 0,
+            'ip': '',
+            'counts': 0,
+            'info': ''
+        }
     def get_ip(self) -> str:
         '''获取玩家IP'''
         assert self.ws, \

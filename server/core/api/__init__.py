@@ -7,6 +7,9 @@ S2C = json.load(
 BROADCAST = json.load(
     open(os.path.join(__this_dir, 'broadcast.json'), 'r')
 )
+C2S = json.load(
+    open(os.path.join(__this_dir, 'c2s.json'), 'r')
+)
 
 def format(Api:dict, **kwargs) -> str:
     '''Format API'''
